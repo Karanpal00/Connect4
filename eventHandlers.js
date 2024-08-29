@@ -51,7 +51,12 @@ export const eventHandlers = {
     handleTouchEnd(e) {
         this.isTouching = false;
         renderer.hoverColumn = -1;
+        const touch = e.changedtouches[0];
         renderer.drawBoardAndPieces();
+
+        if (!renderer.isAnimating) {
+            this.handleInput(touch.clientX);
+        }
     },
 
     handleClick(e) {
