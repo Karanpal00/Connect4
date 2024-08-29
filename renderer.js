@@ -109,17 +109,6 @@ export const renderer = {
         }
     },
 
-
-countStackedPieces(col) {
-    let stackedPieces = 0;
-    for (let row = 0; row < config.rows; row++) {
-        if (gameLogic.board[row][col] !== null) {
-            stackedPieces++;
-        }
-    }
-    return stackedPieces;
-},
-
 animatePieceDrop(row, col, player) {
     return new Promise((resolve) => {
         this.isAnimating = true;
