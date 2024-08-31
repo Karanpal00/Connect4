@@ -1,7 +1,6 @@
 import { config } from './config.js';
-import { pieceCreator } from './pieceCreator.js';
-import { holeCreator } from './holeCreator.js';
 import { gameLogic } from './gameLogic.js';
+import Piece from './piece.js';
 
 export const renderer = {
     gameCanvas: null,
@@ -11,7 +10,9 @@ export const renderer = {
     cellSize: 0,
     hoverColumn: -1,
     isAnimating: false,
-
+    player1: null,
+    player2: null,
+    emptyhole: null,
 
     initialize() {
         this.gameCanvas = document.getElementById('gameCanvas');
@@ -31,6 +32,19 @@ export const renderer = {
         this.gameCanvas.height = this.boardCanvas.height = size;
         this.cellSize = size / config.cols;
         
+        this.player1 = new Piece(this.cellSize,0.6, config.player1Color, this.boardCtx, 0,0,0,0,1, false),
+        this.player2 = new Piece(this.cellSize,0.6, config.player2Color, this.boardCtx, 0,0,0,0,1, false),
+        this.player1gameCTX = new Piece(this.cellSize,0.6, config.player1Color, this.gameCtx, 0,0,0,0,1, false),
+        this.player2gameCTX = new Piece(this.cellSize,0.6, config.player2Color, this.gameCtx, 0,0,0,0,1, false),
+        console.log(this.cellSize);
+        let xOffset = -1;
+        let yOffset = 4;
+        if (this.cellSize <= 50) {
+            xOffset = 0;
+            yOffset = 0;
+        }
+    
+    this.emptyhole = new Piece(this.cellSize, 0.8, config.emptyColor, this.gameCtx, xOffset, 0, yOffset, 0, 0.8, true);
         this.drawBoardAndPieces();
     },
 
@@ -59,11 +73,10 @@ export const renderer = {
                 const x = col * this.cellSize + this.cellSize / 2;
                 const y = row * this.cellSize + this.cellSize / 2;
                 const player = gameLogic.board[row][col];
-                holeCreator.createPiece(this.gameCtx, x, y, this.cellSize * 0.4);
+                this.emptyhole.render(x, y);
 
                 if (player) {
-                    const color = player === 1 ? config.player1Color : config.player2Color;
-                    pieceCreator.createPiece(this.boardCtx, x, y, this.cellSize * 0.4, color);
+                    player === 1 ? this.player1.render(x,y): this.player2.render(x,y);    
                 }
             }
         }
@@ -86,9 +99,9 @@ export const renderer = {
 
             // Draw hover piece
             const x = this.hoverColumn * this.cellSize + this.cellSize / 2;
-            const color = gameLogic.currentPlayer === 1 ? config.player1Color : config.player2Color;
+            
             this.gameCtx.clearRect(0, 0, this.gameCanvas.width, this.cellSize);
-            pieceCreator.createPiece(this.gameCtx, x, this.cellSize / 2, this.cellSize * 0.35, color);
+            gameLogic.currentPlayer === 1 ? this.player1gameCTX.render(x,this.cellSize/2) : this.player2gameCTX.render(x,this.cellSize/2);
         }
     },
 
@@ -108,14 +121,12 @@ export const renderer = {
             this.drawBoardAndPieces();
         }
     },
-
 animatePieceDrop(row, col, player) {
     return new Promise((resolve) => {
         this.isAnimating = true;
         const startY = -this.cellSize / 2;
         const endY = (row + 0.5) * this.cellSize;
         const x = (col + 0.5) * this.cellSize;
-        const color = player === 1 ? config.player1Color : config.player2Color;
 
         const duration = 1000;
         const startTime = Date.now();
@@ -142,7 +153,8 @@ animatePieceDrop(row, col, player) {
             const y = startY + (endY - startY) * easedProgress;
 
             this.drawBoardAndPieces();
-            pieceCreator.createPiece(this.gameCtx, x, y, this.cellSize * 0.4, color);
+
+            gameLogic.currentPlayer === 1 ? this.player1gameCTX.render(x,y) : this.player2gameCTX.render(x,y);
 
             if (progress < 1) {
                 requestAnimationFrame(animate);
