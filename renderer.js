@@ -39,7 +39,7 @@ export const renderer = {
         console.log(this.cellSize);
         let xOffset = -1;
         let yOffset = 4;
-        if (this.cellSize <= 50) {
+        if (this.cellSize <= 55) {
             xOffset = 0;
             yOffset = 0;
         }
