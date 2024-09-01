@@ -4,15 +4,10 @@ import {confettistart} from './confetti.js';
 
 export const eventHandlers = {
     isTouching: false,
-    isPaused: false,  // Flag to indicate if the game is paused
+    isPaused: false,  
 
     initialize() {
-        
-        this.button = document.getElementById("playButton"); // Access the button after DOM setup
-        if (!this.button) {
-            console.error("Button with ID 'playButton' not found.");
-            return;
-        }
+        this.button = document.getElementById("playButton"); 
         this.addEventListeners();
     },
 
@@ -107,10 +102,10 @@ export const eventHandlers = {
     },
 
     showPlayButton() {
-        this.button.style.display = 'block'; // Show the button
+        this.button.style.display = 'block';
         this.button.addEventListener('click', this.handleReset.bind(this), { once: true });
-        this.isPaused = true; // Pause the game
-        this.disableInput(); // Disable input
+        this.isPaused = true; 
+        this.disableInput();
     },
 
     disableInput() {
