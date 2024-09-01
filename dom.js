@@ -7,7 +7,10 @@ export const dom = {
             <div id="board-container">
                 <canvas id="gameCanvas"></canvas>
                 <canvas id="boardCanvas"></canvas>
+                <button id="playButton">Play again</button>
             </div>
+            <canvas id="winCanvas"></canvas>
+            
             <div id="player2">Player 2</div>
             <div id="resetButton"><span>x</span></div>
         `;
@@ -71,6 +74,27 @@ export const dom = {
                 align-items: center;
                 justify-content: center;
             }
+            
+            #playButton {
+                position: absolute;
+                padding: 10px 20px;
+                font-size: 16px;
+                bottom: 30px;
+                background-color: #ffdd57;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                display:none;
+                z-index: 15;
+            }
+            .confetti {
+                position: absolute;
+                width: 10px;
+                height: 10px;
+                background-color: #FF5733;
+                border-radius: 50%;
+                pointer-events: none;
+            }
             #board-container {
                 position: relative;
                 width: 100%;
@@ -81,6 +105,7 @@ export const dom = {
                 padding: 10px;
                 box-sizing: border-box;
             }
+            
             canvas {
                 position: absolute;
             }
