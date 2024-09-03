@@ -149,7 +149,6 @@ export const renderer = {
                 }
             };
     
-            // Ensure the sound is loaded
             const bounceSound = config.bounceSound;
             bounceSound.load();
     
@@ -169,7 +168,6 @@ export const renderer = {
                     this.player2gameCTX.render(x, y);
                 }
     
-                // Play the sound when the piece is at or very near the end position
                 if (progress >= 0.4 && !hasPlayedBounceSound) {
                     bounceSound.play().catch(error => console.error('Error playing sound:', error));
                     hasPlayedBounceSound = true;
