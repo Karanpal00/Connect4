@@ -132,11 +132,11 @@ export const renderer = {
             const startY = this.cellSize / 2;
             const endY = (row + 0.5) * this.cellSize;
             const x = (col + 0.5) * this.cellSize;
-
+    
             const duration = 1000;
             const startTime = Date.now();
-
-            // Ease-out bounce function
+            let hasPlayedBounceSound = false;
+    
             const easeOutBounce = (t) => {
                 if (t < 1 / 2.75) {
                     return 7.5625 * t * t;
@@ -148,19 +148,33 @@ export const renderer = {
                     return 7.5625 * (t -= 2.625 / 2.75) * t + 0.984375;
                 }
             };
-
+    
+            // Ensure the sound is loaded
+            const bounceSound = config.bounceSound;
+            bounceSound.load();
+    
             const animate = () => {
                 const currentTime = Date.now();
                 const elapsedTime = currentTime - startTime;
                 const progress = Math.min(elapsedTime / duration, 1);
-
+    
                 const easedProgress = easeOutBounce(progress);
                 const y = startY + (endY - startY) * easedProgress;
-
+    
                 this.drawBoardAndPieces();
-
-                gameLogic.currentPlayer === 1 ? this.player1gameCTX.render(x,y) : this.player2gameCTX.render(x,y);
-
+    
+                if (gameLogic.currentPlayer === 1) {
+                    this.player1gameCTX.render(x, y);
+                } else {
+                    this.player2gameCTX.render(x, y);
+                }
+    
+                // Play the sound when the piece is at or very near the end position
+                if (progress >= 0.4 && !hasPlayedBounceSound) {
+                    bounceSound.play().catch(error => console.error('Error playing sound:', error));
+                    hasPlayedBounceSound = true;
+                }
+    
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
@@ -168,10 +182,11 @@ export const renderer = {
                     resolve();
                 }
             };
-
+    
             animate();
         });
     },
+    
 
     displayWin() {
         this.color = gameLogic.currentPlayer === 1? "Red" : "Yellow";

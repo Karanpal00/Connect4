@@ -84,7 +84,7 @@ export const eventHandlers = {
         if (dropResult) {
             await renderer.animatePieceDrop(dropResult.row, dropResult.col, dropResult.player);
             gameLogic.commitDrop(dropResult.row, dropResult.col);
-            
+
             setTimeout(() => {
                 if (gameLogic.checkWin(dropResult.row, dropResult.col)) {
                     renderer.displayWin();
@@ -97,7 +97,7 @@ export const eventHandlers = {
                     gameLogic.switchPlayer();
                     renderer.drawBoardAndPieces();
                 }
-            }, 150);
+            }, 75);
         }
     },
 
