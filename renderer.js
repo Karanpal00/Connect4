@@ -33,7 +33,7 @@ export const renderer = {
         
         this.gameCanvas.width = this.boardCanvas.width = size;
         this.gameCanvas.height = this.boardCanvas.height = size;
-        this.winCanvas.width = size*0.8;
+        this.winCanvas.width = size;
         this.winCanvas.height = size*0.6;
         this.cellSize = size / config.cols;
         
