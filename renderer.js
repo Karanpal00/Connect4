@@ -168,7 +168,7 @@ export const renderer = {
                     this.player2gameCTX.render(x, y);
                 }
     
-                if (progress >= 0.4 && !hasPlayedBounceSound) {
+                if (progress >= 0.1 && !hasPlayedBounceSound) {
                     bounceSound.play().catch(error => console.error('Error playing sound:', error));
                     hasPlayedBounceSound = true;
                 }
