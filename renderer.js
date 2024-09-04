@@ -187,6 +187,7 @@ export const renderer = {
     
 
     displayWin() {
+        const gameover = config.gameOverSound;
         this.color = gameLogic.currentPlayer === 1? "Red" : "Yellow";
         this.winCanvas.style.display = 'block';
         this.winCtx.clearRect(0, 0, winCanvas.width, winCanvas.height);
@@ -194,7 +195,7 @@ export const renderer = {
         this.winCtx.font = "40px Arial";
         this.winCtx.textAlign = "center";
         this.winCtx.fillText(`${this.color.toUpperCase()} WINS!`, winCanvas.width/2, winCanvas.height/2);
-
+        gameover.play()
         gsap.fromTo(winCanvas, 
             { opacity: 0, scale: 0.5, rotation: -15 }, 
             { opacity: 1, scale: 1, rotation: 0, duration: 1.5, ease: "elastic.out(1, 0.5)" }
