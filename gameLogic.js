@@ -1,12 +1,20 @@
 import { config } from './config.js';
+import { renderer } from './renderer.js';
+import { confettistart } from './confetti.js';
 
 export const gameLogic = {
     board: [],
     currentPlayer: 1,
+    isPaused: false,
+    isProcessingMove: false,
+    winningCells: [],
 
     initializeBoard() {
         this.board = Array.from({ length: config.rows }, () => Array(config.cols).fill(null));
         this.currentPlayer = 1;
+        this.isPaused = false;
+        this.isProcessingMove = false;
+        this.hidePlayButton();
     },
 
     getDropLocation(col) {
@@ -16,47 +24,71 @@ export const gameLogic = {
         return -1;
     },
 
-    dropPiece(col) {
+    async makeMove(col) {
+        if (this.isPaused || this.isProcessingMove) return;
+
+        this.isProcessingMove = true;
+
         const row = this.getDropLocation(col);
         if (row !== -1) {
-            return { row, col, player: this.currentPlayer };
+            const player = this.currentPlayer;
+            await renderer.animatePieceDrop(row, col, player);
+            this.board[row][col] = player;
+
+            if (this.checkWin(row, col, player)) {
+                renderer.displayWin(player);
+                confettistart.startConfetti();
+                this.showPlayButton();
+                this.isPaused = true;
+            } else if (this.board.flat().every(cell => cell !== null)) {
+                renderer.displayDraw();
+                this.showPlayButton();
+                this.isPaused = true;
+            } else {
+                this.switchPlayer();
+                renderer.drawBoardAndPieces();
+            }
         }
-        return null;
+
+        this.isProcessingMove = false;
     },
 
-    commitDrop(row, col) {
-        this.board[row][col] = this.currentPlayer;
+    showPlayButton() {
+        const button = document.getElementById("playButton");
+        button.style.display = 'block';
     },
 
-    checkWin(row, col) {
-        const directions = [
-            { x: 0, y: 1 },   // vertical
-            { x: 1, y: 0 },   // horizontal
-            { x: 1, y: 1 },   // diagonal /
-            { x: 1, y: -1 }   // diagonal \
-        ];
+    hidePlayButton() {
+        const button = document.getElementById("playButton");
+        button.style.display = 'none';
+    },
 
-        for (let { x, y } of directions) {
+    
+
+    checkWin(row, col, player) {
+        const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+        
+        for (const [dx, dy] of directions) {
             let count = 1;
+            const cells = [[row, col]];
 
-            for (let i = 1; i < 4; i++) {
-                const r = row + i * x;
-                const c = col + i * y;
-                if (r < 0 || r >= config.rows || c < 0 || c >= config.cols || this.board[r][c] !== this.currentPlayer) break;
+            for (let i = -3; i <= 3; i++) {
+                if (i === 0) continue;
+                const r = row + i * dx, c = col + i * dy;
+                if (r < 0 || r >= config.rows || c < 0 || c >= config.cols || this.board[r][c] !== player) continue;
                 count++;
+                cells.push([r, c]);
+                if (count === 4) {
+                    this.winningCells = cells;
+                    return true;
+                }
             }
-
-            for (let i = 1; i < 4; i++) {
-                const r = row - i * x;
-                const c = col - i * y;
-                if (r < 0 || r >= config.rows || c < 0 || c >= config.cols || this.board[r][c] !== this.currentPlayer) break;
-                count++;
-            }
-
-            if (count >= 4) return true;
         }
-
         return false;
+    },
+
+    getWinningCells() {
+        return this.winningCells;
     },
 
     switchPlayer() {
@@ -65,5 +97,8 @@ export const gameLogic = {
 
     resetGame() {
         this.initializeBoard();
+        renderer.resetDisplay();
+        renderer.drawBoardAndPieces();
+        confettistart.stopConfetti();
     }
 };

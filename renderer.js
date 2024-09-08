@@ -7,21 +7,23 @@ export const renderer = {
     gameCtx: null,
     boardCanvas: null,
     boardCtx: null,
+    winMessageElement: null,
     cellSize: 0,
     hoverColumn: -1,
     isAnimating: false,
     player1: null,
     player2: null,
     emptyhole: null,
-    color:null,
+    player1gameCTX: null,
+    player2gameCTX: null,
+    gameOver : null,
 
     initialize() {
         this.gameCanvas = document.getElementById('gameCanvas');
         this.gameCtx = this.gameCanvas.getContext('2d');
         this.boardCanvas = document.getElementById('boardCanvas');
-        this.winCanvas = document.getElementById('winCanvas');
-        this.winCtx = this.winCanvas.getContext('2d');
         this.boardCtx = this.boardCanvas.getContext('2d');
+        this.winMessageElement = document.getElementById('winMessage');
         this.resizeCanvas();
     },
 
@@ -33,14 +35,12 @@ export const renderer = {
         
         this.gameCanvas.width = this.boardCanvas.width = size;
         this.gameCanvas.height = this.boardCanvas.height = size;
-        this.winCanvas.width = size;
-        this.winCanvas.height = size*0.6;
         this.cellSize = size / config.cols;
         
-        this.player1 = new Piece(this.cellSize,0.6, config.player1Color, this.boardCtx, 0,0,0,0,1, false),
-        this.player2 = new Piece(this.cellSize,0.6, config.player2Color, this.boardCtx, 0,0,0,0,1, false),
-        this.player1gameCTX = new Piece(this.cellSize,0.6, config.player1Color, this.gameCtx, 0,0,0,0,1, false),
-        this.player2gameCTX = new Piece(this.cellSize,0.6, config.player2Color, this.gameCtx, 0,0,0,0,1, false);
+        this.player1 = new Piece(this.cellSize, 0.6, config.player1Color, this.boardCtx, 0, 0, 0, 0, 1, false);
+        this.player2 = new Piece(this.cellSize, 0.6, config.player2Color, this.boardCtx, 0, 0, 0, 0, 1, false);
+        this.player1gameCTX = new Piece(this.cellSize, 0.6, config.player1Color, this.gameCtx, 0, 0, 0, 0, 1, false);
+        this.player2gameCTX = new Piece(this.cellSize, 0.6, config.player2Color, this.gameCtx, 0, 0, 0, 0, 1, false);
 
         let xOffset = -1;
         let yOffset = 4;
@@ -49,12 +49,11 @@ export const renderer = {
             yOffset = 0;
         }
     
-    this.emptyhole = new Piece(this.cellSize, 0.8, config.emptyColor, this.gameCtx, xOffset, 0, yOffset, 0, 0.8, true);
+        this.emptyhole = new Piece(this.cellSize, 0.8, config.emptyColor, this.gameCtx, xOffset, 0, yOffset, 0, 0.8, true);
         this.drawBoardAndPieces();
     },
 
     drawBoardAndPieces() {
-        // Draw board 
         this.boardCtx.clearRect(0, 0, this.boardCanvas.width, this.boardCanvas.height);
         this.boardCtx.fillStyle = config.boardColor;
         this.boardCtx.fillRect(0, this.boardCanvas.height/config.cols, this.boardCanvas.width, this.boardCanvas.height);
@@ -71,8 +70,9 @@ export const renderer = {
         }
         this.boardCtx.globalCompositeOperation = 'source-over';
 
-        // Draw pieces and background
         this.gameCtx.clearRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
+        
+        const winningCells = gameLogic.getWinningCells();
         for (let row = 1; row < config.rows; row++) {
             for (let col = 0; col < config.cols; col++) {
                 const x = col * this.cellSize + this.cellSize / 2;
@@ -80,8 +80,14 @@ export const renderer = {
                 const player = gameLogic.board[row][col];
                 this.emptyhole.render(x, y);
 
-                if (player) {
-                    player === 1 ? this.player1.render(x,y): this.player2.render(x,y);    
+                if (player !== null) {
+                    const isWinningCell = winningCells.some(cell => cell[0] === row && cell[1] === col);
+                    if (isWinningCell || !this.gameOver) {
+                        player === 1 ? this.player1.render(x, y) : this.player2.render(x, y);
+                    } else {
+                        const grayPiece = new Piece(this.cellSize, 0.6, "#808080", this.gameCtx, 0, 0, 0, 0, 1, false);
+                        grayPiece.render(x, y);
+                    }
                 }
             }
         }
@@ -93,7 +99,6 @@ export const renderer = {
 
     drawHoverEffect() {
         if (this.hoverColumn !== -1) {
-            // Draw gray strip
             this.gameCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
             this.gameCtx.fillRect(
                 this.hoverColumn * this.cellSize,
@@ -102,31 +107,35 @@ export const renderer = {
                 this.boardCanvas.height
             );
 
-            // Draw hover piece
             const x = this.hoverColumn * this.cellSize + this.cellSize / 2;
             
             this.gameCtx.clearRect(0, 0, this.gameCanvas.width, this.cellSize);
-            gameLogic.currentPlayer === 1 ? this.player1gameCTX.render(x,this.cellSize/2) : this.player2gameCTX.render(x,this.cellSize/2);
+            gameLogic.currentPlayer === 1 
+                ? this.player1gameCTX.render(x, this.cellSize/2) 
+                : this.player2gameCTX.render(x, this.cellSize/2);
         }
     },
 
     updateHoverColumn(clientX) {
-        if (this.isAnimating) return;
+        if (this.isAnimating || this.gameOver) {
+            this.gameCtx.clearRect(0, 0, this.gameCanvas.width, this.cellSize);
+            return;
+        }
 
-        const rect = this.boardCanvas.getBoundingClientRect();
-        const x = clientX - rect.left;
-        if (x >= 0 && x < this.boardCanvas.width) {
-            const newHoverColumn = Math.floor(x / this.cellSize);
-            if (this.hoverColumn !== newHoverColumn) {
-                this.hoverColumn = newHoverColumn;
-                this.drawBoardAndPieces();
-            }
-        } else if (this.hoverColumn !== -1) {
-            this.hoverColumn = -1;
+        const newHoverColumn = clientX === null ? -1 : this.getColumnFromX(clientX);
+        if (this.hoverColumn !== newHoverColumn) {
+            this.hoverColumn = newHoverColumn;
             this.drawBoardAndPieces();
         }
     },
-    animatePieceDrop(row, col) {
+
+    getColumnFromX(clientX) {
+        const rect = this.boardCanvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+        return Math.floor(x / this.cellSize);
+    },
+
+    animatePieceDrop(row, col, player) {
         return new Promise((resolve) => {
             this.isAnimating = true;
             const startY = this.cellSize / 2;
@@ -162,7 +171,7 @@ export const renderer = {
     
                 this.drawBoardAndPieces();
     
-                if (gameLogic.currentPlayer === 1) {
+                if (player === 1) {
                     this.player1gameCTX.render(x, y);
                 } else {
                     this.player2gameCTX.render(x, y);
@@ -184,27 +193,38 @@ export const renderer = {
             animate();
         });
     },
-    
 
-    displayWin() {
+    displayWin(player) {
+        const color = player === 1 ? "Red" : "Yellow";
+        this.displayEndGame(`${color.toUpperCase()} WINS!`, player);
+    },
+
+    displayDraw() {
+        this.displayEndGame("IT'S A DRAW!");
+    },
+
+    displayEndGame(message, winningPlayer = null) {
+        this.winMessageElement.textContent = message;
+        this.winMessageElement.style.color = "black";
+        this.winMessageElement.style.display = 'block';
+        
         const gameover = config.gameOverSound;
-        this.color = gameLogic.currentPlayer === 1? "Red" : "Yellow";
-        this.winCanvas.style.display = 'block';
-        this.winCtx.clearRect(0, 0, winCanvas.width, winCanvas.height);
-        this.winCtx.fillStyle = this.color;
-        this.winCtx.font = "40px Arial";
-        this.winCtx.textAlign = "center";
-        this.winCtx.fillText(`${this.color.toUpperCase()} WINS!`, winCanvas.width/2, winCanvas.height/2);
-        gameover.play()
-        gsap.fromTo(winCanvas, 
-            { opacity: 0, scale: 0.5, rotation: -15 }, 
+        gameover.play();
+
+        gsap.fromTo(this.winMessageElement,
+            { opacity: 0, scale: 0.5, rotation: -15 },
             { opacity: 1, scale: 1, rotation: 0, duration: 1.5, ease: "elastic.out(1, 0.5)" }
         );
+
+        if (winningPlayer !== null) {
+            this.gameOver = true;
+            this.drawBoardAndPieces();
+        }
     },
-    
-    clearWinCanvas () {
-        this.winCtx.clearRect(0,0, winCanvas.width, winCanvas.height);
+
+    resetDisplay() {
+        this.winMessageElement.style.display = 'none';
+        this.gameOver = false;
+        this.drawBoardAndPieces();
     }
-    
-      
 };

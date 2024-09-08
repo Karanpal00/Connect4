@@ -5,12 +5,11 @@ export const dom = {
         container.innerHTML = `
             <div id="player1">Player 1</div>
             <div id="board-container">
+                <div id="winMessage"></div>
                 <canvas id="gameCanvas"></canvas>
                 <canvas id="boardCanvas"></canvas>
                 <button id="playButton">Play again</button>
-            </div>
-            <canvas id="winCanvas"></canvas>
-            
+            </div>            
             <div id="player2">Player 2</div>
             <div id="resetButton"><span>x</span></div>
         `;
@@ -34,6 +33,9 @@ export const dom = {
                 background-color: #f0f0f0;
                 font-family: Arial, sans-serif;
             }
+            * {
+                user-select:none;
+            }
             #game-container {
                 display: flex;
                 flex-direction: column;
@@ -44,6 +46,20 @@ export const dom = {
                 box-sizing: border-box;
                 padding: 20px;
                 position: relative;
+            }
+            #winMessage {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 40px;
+                font-weight: bold;
+                text-align: center;
+                padding: 20px;
+                border-radius: 10px;
+                background-color: rgba(255, 255, 255, 0.8);
+                z-index: 1000;
+                display: none;
             }
             #player1, #player2 {
                 width: 100%;
