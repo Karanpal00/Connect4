@@ -92,7 +92,7 @@ export const renderer = {
             }
         }
 
-        if (this.hoverColumn !== -1 && !this.isAnimating) {
+        if (this.hoverColumn !== -1 && !this.isAnimating && !this.gameOver) {
             this.drawHoverEffect();
         }
     },
