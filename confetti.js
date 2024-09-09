@@ -1,5 +1,6 @@
 export const confettistart = {
     colors: ['#FF5733', '#FFDD57', '#33FF57', '#3357FF', '#FF33A1', '#A133FF'],
+    
 
     createConfettiPiece() {
         const confetti = document.createElement('div');
@@ -7,10 +8,11 @@ export const confettistart = {
         confetti.style.left = `${Math.random() * window.innerWidth}px`;
         confetti.style.top = `-${Math.random() * 20}px`;
         confetti.style.backgroundColor = this.getRandomColor();
-        document.body.appendChild(confetti);
+        const wrapper = document.getElementById("wrapper");
+        wrapper.append(confetti);
 
         gsap.to(confetti, {
-            y: window.innerHeight + 100,
+            y: window.innerHeight,
             x: `random(-200, 200)`,
             rotation: `random(0, 360)`,
             duration: `random(2, 4)`,

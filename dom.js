@@ -3,6 +3,7 @@ export const dom = {
         const container = document.createElement('div');
         container.id = 'game-container';
         container.innerHTML = `
+            <div id="wrapper"></div>
             <div id="player1">Player 1</div>
             <div id="board-container">
                 <div id="winMessage"></div>
@@ -102,6 +103,11 @@ export const dom = {
                 cursor: pointer;
                 display:none;
                 z-index: 15;
+            }
+            .wrapper {
+                width: 100vw;
+                height: 100vh;
+                overflow: hidden;
             }
             .confetti {
                 position: absolute;
