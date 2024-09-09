@@ -50,13 +50,13 @@ export const dom = {
             }
             #winMessage {
                 position: absolute;
-                top: 50%;
-                left: 50%;
+                top: 10vh;
+                left: 45vw;
                 transform: translate(-50%, -50%);
-                font-size: 40px;
+                font-size: calc(2vw + 2vh);
                 font-weight: bold;
                 text-align: center;
-                padding: 20px;
+                padding: calc(1vw + 1vh);
                 border-radius: 10px;
                 background-color: rgba(255, 255, 255, 0.8);
                 z-index: 1000;
@@ -94,9 +94,9 @@ export const dom = {
             
             #playButton {
                 position: absolute;
-                padding: 10px 20px;
-                font-size: 16px;
-                bottom: 30px;
+                padding: calc(0.5vw + 0.5vh) calc(1vw + 1vh);   
+                font-size: calc(1vw + 1vh);
+                bottom:1vh;
                 background-color: #ffdd57;
                 border: none;
                 border-radius: 5px;
