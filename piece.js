@@ -9,7 +9,6 @@ export default class Piece {
         this.x1 = 0;
         this.y0 = 0;
         this.y1 = 0;
-        console.log(renderer.cellSize);
         if (df && renderer.cellSize >= 70) {
             this.x0 = -1;
             this.y0 = 4;

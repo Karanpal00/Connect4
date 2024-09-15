@@ -37,20 +37,20 @@ export const renderer = {
         this.gameCanvas.height = this.boardCanvas.height = size;
         this.cellSize = size / config.cols;
 
-        const boardPiece = 0.3;
+        const boardPiece = 0.32;
         const midPiece = 0.35;
 
-        this.player1 = new Piece(0.6, config.player1Color, this.gameCtx, boardPiece,1, 1);
-        this.player2 = new Piece(0.6, config.player2Color, this.gameCtx, boardPiece,1, 1);
+        this.player1 = new Piece(0.4, config.player1Color, this.gameCtx, boardPiece,1, 1);
+        this.player2 = new Piece(0.4, config.player2Color, this.gameCtx, boardPiece,1, 1);
 
-        this.player1Mid = new Piece(0.6, config.player1Color, this.gameCtx, midPiece,1, 1);
-        this.player2Mid = new Piece(0.6, config.player2Color, this.gameCtx, midPiece,1, 1);
+        this.player1Mid = new Piece(0.4, config.player1Color, this.gameCtx, midPiece,1, 1);
+        this.player2Mid = new Piece(0.4, config.player2Color, this.gameCtx, midPiece,1, 1);
 
-        this.hoverPlayer1 = new Piece(0.6, config.player1Color, this.gameCtx, boardPiece, 0.4, 0.3);
-        this.hoverPlayer2 = new Piece(0.6, config.player2Color, this.gameCtx, boardPiece, 0.4, 0.3);
+        this.hoverPlayer1 = new Piece(0.4, config.player1Color, this.gameCtx, boardPiece, 0.4, 0.3);
+        this.hoverPlayer2 = new Piece(0.4, config.player2Color, this.gameCtx, boardPiece, 0.4, 0.3);
 
     
-        this.emptyhole = new Piece(0.8, config.emptyColor, this.gameCtx,boardPiece, 1, 0.8, true);
+        this.emptyhole = new Piece(0.8, config.emptyColor, this.gameCtx,0.3, 1, 0.8, true);
         this.drawBoardAndPieces();
     },
 
