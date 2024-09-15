@@ -40,17 +40,17 @@ export const renderer = {
         const boardPiece = 0.3;
         const midPiece = 0.35;
 
-        this.player1 = new Piece(0.6, config.player1Color, this.gameCtx, boardPiece,1, 1, false);
-        this.player2 = new Piece(0.6, config.player2Color, this.gameCtx, boardPiece,1, 1, false);
+        this.player1 = new Piece(0.6, config.player1Color, this.gameCtx, boardPiece,1, 1);
+        this.player2 = new Piece(0.6, config.player2Color, this.gameCtx, boardPiece,1, 1);
 
-        this.player1Mid = new Piece(0.6, config.player1Color, this.gameCtx, midPiece,1, 1, false);
-        this.player2Mid = new Piece(0.6, config.player2Color, this.gameCtx, midPiece,1, 1, false);
+        this.player1Mid = new Piece(0.6, config.player1Color, this.gameCtx, midPiece,1, 1);
+        this.player2Mid = new Piece(0.6, config.player2Color, this.gameCtx, midPiece,1, 1);
 
-        this.hoverPlayer1 = new Piece(0.6, config.player1Color, this.gameCtx, boardPiece, 0.4, 0.3, false);
-        this.hoverPlayer2 = new Piece(0.6, config.player2Color, this.gameCtx, boardPiece, 0.4, 0.3, false);
+        this.hoverPlayer1 = new Piece(0.6, config.player1Color, this.gameCtx, boardPiece, 0.4, 0.3);
+        this.hoverPlayer2 = new Piece(0.6, config.player2Color, this.gameCtx, boardPiece, 0.4, 0.3);
 
     
-        this.emptyhole = new Piece(0.8, config.emptyColor, this.gameCtx,boardPiece,1, 0.8, true);
+        this.emptyhole = new Piece(0.8, config.emptyColor, this.gameCtx,boardPiece, 1, 0.8, true);
         this.drawBoardAndPieces();
     },
 
@@ -86,7 +86,7 @@ export const renderer = {
                     if ((isWinningCell || !this.gameOver )){
                         player === 1 ? this.player1.render(x, y) : this.player2.render(x, y);
                     } else {
-                        const grayPiece = new Piece(0.6, config.endColor, this.gameCtx,0.3,1, 1, false);
+                        const grayPiece = new Piece(0.6, config.endColor, this.gameCtx,0.3,1, 1);
                         grayPiece.render(x, y);
                     }
                 }
@@ -116,7 +116,6 @@ export const renderer = {
                 this.cellSize,
                 this.boardCanvas.height - (this.cellSize*(6-row))
             );
-            console.log(this.boardCanvas.height - (this.cellSize*(6-row)));
 
             const x = this.hoverColumn * this.cellSize + this.cellSize / 2;
             const y = row* this.cellSize + this.cellSize / 2;

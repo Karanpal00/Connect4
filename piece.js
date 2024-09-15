@@ -9,13 +9,17 @@ export default class Piece {
         this.x1 = 0;
         this.y0 = 0;
         this.y1 = 0;
-        if (df  && renderer.cellSize >= 50 ) {
+        console.log(renderer.cellSize);
+        if (df && renderer.cellSize >= 70) {
             this.x0 = -1;
             this.y0 = 4;
-        }
+        } else if (df && renderer.cellSize >= 60) {
+            this.y0 = 3;
+        } 
         
         
         this.gradient = ctx.createRadialGradient(this.x0, this.y0, this.cellSize*constant, this.x1, this.y1, this.cellSize);
+
         if (df === true) {
             this.gradient.addColorStop(0.5, "#6b6b6b");
         } else {
