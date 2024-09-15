@@ -17,6 +17,7 @@ export const eventHandlers = {
         boardCanvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
 
         document.getElementById('playButton').addEventListener('click', this.handlePlayAgain.bind(this));
+        document.getElementById('resetButton').addEventListener('click', this.handlePlayAgain.bind(this));
     },
 
     handleMouseMove(e) {

@@ -1,24 +1,27 @@
-export default class Piece {
-    constructor(cellSize,constant,baseColor,ctx, x0, x1, y0, y1, alpha, df) {
-        this.ctx = ctx;
-        this.cellSize = cellSize*0.4;
-        this.color = this.hexToRgb(baseColor);
-        this.x0 = x0;
-        this.x1 = x1;
-        this.y0 = y0;
-        this.y1 = y1;
-        this.alpha = alpha;
-        this.df = df;
-        this.constant = constant;
-        
-        this.gradient = ctx.createRadialGradient(this.x0, this.y0, this.cellSize*this.constant, this.x1, this.y1, this.cellSize);
-        if (df === true) {
-            this.gradient.addColorStop(0.5, "white");
-        } else {
-            this.gradient.addColorStop(0.5, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 1)`);
-        }
-        this.gradient.addColorStop(0.7, `rgba(${this.color.r - 50}, ${this.color.g - 50}, ${this.color.b - 50}, ${this.alpha})`); 
+import { renderer } from "./renderer.js";
 
+export default class Piece {
+    constructor(constant, baseColor, ctx, size, innerAlpha, outerAlpha, df = false) {
+        this.ctx = ctx;
+        this.cellSize = renderer.cellSize*size;
+        this.color = this.hexToRgb(baseColor);
+        this.x0 = 0;
+        this.x1 = 0;
+        this.y0 = 0;
+        this.y1 = 0;
+        if (df  && renderer.cellSize >= 50 ) {
+            this.x0 = -1;
+            this.y0 = 4;
+        }
+        
+        
+        this.gradient = ctx.createRadialGradient(this.x0, this.y0, this.cellSize*constant, this.x1, this.y1, this.cellSize);
+        if (df === true) {
+            this.gradient.addColorStop(0.5, "#6b6b6b");
+        } else {
+            this.gradient.addColorStop(0.5, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${innerAlpha})`);
+        }
+        this.gradient.addColorStop(0.7, `rgba(${this.color.r - 50}, ${this.color.g - 50}, ${this.color.b - 50}, ${outerAlpha})`);
     }
 
     render(x, y) {

@@ -36,20 +36,21 @@ export const renderer = {
         this.gameCanvas.width = this.boardCanvas.width = size;
         this.gameCanvas.height = this.boardCanvas.height = size;
         this.cellSize = size / config.cols;
-        
-        this.player1 = new Piece(this.cellSize, 0.6, config.player1Color, this.boardCtx, 0, 0, 0, 0, 1, false);
-        this.player2 = new Piece(this.cellSize, 0.6, config.player2Color, this.boardCtx, 0, 0, 0, 0, 1, false);
-        this.player1gameCTX = new Piece(this.cellSize, 0.6, config.player1Color, this.gameCtx, 0, 0, 0, 0, 1, false);
-        this.player2gameCTX = new Piece(this.cellSize, 0.6, config.player2Color, this.gameCtx, 0, 0, 0, 0, 1, false);
 
-        let xOffset = -1;
-        let yOffset = 4;
-        if (this.cellSize <= 55) {
-            xOffset = 0;
-            yOffset = 0;
-        }
+        const boardPiece = 0.3;
+        const midPiece = 0.35;
+
+        this.player1 = new Piece(0.6, config.player1Color, this.gameCtx, boardPiece,1, 1, false);
+        this.player2 = new Piece(0.6, config.player2Color, this.gameCtx, boardPiece,1, 1, false);
+
+        this.player1Mid = new Piece(0.6, config.player1Color, this.gameCtx, midPiece,1, 1, false);
+        this.player2Mid = new Piece(0.6, config.player2Color, this.gameCtx, midPiece,1, 1, false);
+
+        this.hoverPlayer1 = new Piece(0.6, config.player1Color, this.gameCtx, boardPiece, 0.4, 0.3, false);
+        this.hoverPlayer2 = new Piece(0.6, config.player2Color, this.gameCtx, boardPiece, 0.4, 0.3, false);
+
     
-        this.emptyhole = new Piece(this.cellSize, 0.8, config.emptyColor, this.gameCtx, xOffset, 0, yOffset, 0, 0.8, true);
+        this.emptyhole = new Piece(0.8, config.emptyColor, this.gameCtx,boardPiece,1, 0.8, true);
         this.drawBoardAndPieces();
     },
 
@@ -63,15 +64,15 @@ export const renderer = {
             for (let col = 0; col < config.cols; col++) {
                 const x = col * this.cellSize + this.cellSize / 2;
                 const y = row * this.cellSize + this.cellSize / 2;
+
                 this.boardCtx.beginPath();
-                this.boardCtx.arc(x, y, this.cellSize * 0.4, 0, 2 * Math.PI);
+                this.boardCtx.arc(x, y, this.cellSize * 0.3, 0, 2 * Math.PI);
                 this.boardCtx.fill();
             }
         }
         this.boardCtx.globalCompositeOperation = 'source-over';
 
         this.gameCtx.clearRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
-        
         const winningCells = gameLogic.getWinningCells();
         for (let row = 1; row < config.rows; row++) {
             for (let col = 0; col < config.cols; col++) {
@@ -82,16 +83,23 @@ export const renderer = {
 
                 if (player !== null) {
                     const isWinningCell = winningCells.some(cell => cell[0] === row && cell[1] === col);
-                    if (isWinningCell || !this.gameOver) {
+                    if ((isWinningCell || !this.gameOver )){
                         player === 1 ? this.player1.render(x, y) : this.player2.render(x, y);
                     } else {
-                        const grayPiece = new Piece(this.cellSize, 0.6, "#808080", this.gameCtx, 0, 0, 0, 0, 1, false);
+                        const grayPiece = new Piece(0.6, config.endColor, this.gameCtx,0.3,1, 1, false);
                         grayPiece.render(x, y);
                     }
                 }
             }
         }
+        if (!this.isAnimating && !this.gameOver) {
+            const x = 3*this.cellSize+this.cellSize/2;
 
+            gameLogic.currentPlayer === 1 
+                    ? this.player1Mid.render(x, this.cellSize/2) 
+                    : this.player2Mid.render(x, this.cellSize/2);
+        }
+        
         if (this.hoverColumn !== -1 && !this.isAnimating && !this.gameOver) {
             this.drawHoverEffect();
         }
@@ -99,20 +107,33 @@ export const renderer = {
 
     drawHoverEffect() {
         if (this.hoverColumn !== -1) {
-            this.gameCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
+            const row = gameLogic.getDropLocation(this.hoverColumn);
+            if (row !== -1) {
+                this.gameCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
             this.gameCtx.fillRect(
                 this.hoverColumn * this.cellSize,
                 0,
                 this.cellSize,
-                this.boardCanvas.height
+                this.boardCanvas.height - (this.cellSize*(6-row))
             );
+            console.log(this.boardCanvas.height - (this.cellSize*(6-row)));
 
             const x = this.hoverColumn * this.cellSize + this.cellSize / 2;
+            const y = row* this.cellSize + this.cellSize / 2;
             
             this.gameCtx.clearRect(0, 0, this.gameCanvas.width, this.cellSize);
             gameLogic.currentPlayer === 1 
-                ? this.player1gameCTX.render(x, this.cellSize/2) 
-                : this.player2gameCTX.render(x, this.cellSize/2);
+                ? this.player1.render(x, this.cellSize) 
+                : this.player2.render(x, this.cellSize);
+
+
+
+            gameLogic.currentPlayer === 1 
+                ? this.hoverPlayer1.render(x, y) 
+                : this.hoverPlayer2.render(x, y);
+            }
+
+            
         }
     },
 
@@ -172,9 +193,9 @@ export const renderer = {
                 this.drawBoardAndPieces();
     
                 if (player === 1) {
-                    this.player1gameCTX.render(x, y);
+                    this.player1.render(x, y);
                 } else {
-                    this.player2gameCTX.render(x, y);
+                    this.player2.render(x, y);
                 }
     
                 if (progress >= 0.1 && !hasPlayedBounceSound) {
@@ -195,7 +216,7 @@ export const renderer = {
     },
 
     displayWin(player) {
-        const color = player === 1 ? "Red" : "Yellow";
+        const color = player === 1 ? "Yellow" : "Red";
         this.displayEndGame(`${color.toUpperCase()} WINS!`, player);
     },
 

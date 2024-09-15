@@ -31,7 +31,7 @@ export const dom = {
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
-                background-color: #f0f0f0;
+                background-color: #6b6b6b;
                 font-family: Arial, sans-serif;
             }
             * {

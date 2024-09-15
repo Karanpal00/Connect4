@@ -1,10 +1,11 @@
 export const config = {
     rows: 7,
     cols: 7,
-    player1Color: "#e53935",
-    player2Color: "#fdd835",
-    boardColor: 'blue',
-    emptyColor: '#cfd8dc',
+    player1Color: "#feed19",
+    player2Color: "#f5503a",
+    boardColor: '#4b63c5',
+    emptyColor: '#6b6b6b',
+    endColor: "#eff1fd",
     animationSpeed: 7,
     bounceSound : (() => {
         const sound = new Audio('./bounce.wav');

@@ -18,7 +18,7 @@ export const gameLogic = {
     },
 
     getDropLocation(col) {
-        for (let row = config.rows - 1; row >= 0; row--) {
+        for (let row = config.rows - 1; row > 0; row--) {
             if (!this.board[row][col]) return row;
         }
         return -1;
@@ -71,20 +71,39 @@ export const gameLogic = {
         for (const [dx, dy] of directions) {
             let count = 1;
             const cells = [[row, col]];
-
-            for (let i = -3; i <= 3; i++) {
-                if (i === 0) continue;
+    
+            for (let i = 1; i <= 3; i++) {
                 const r = row + i * dx, c = col + i * dy;
-                if (r < 0 || r >= config.rows || c < 0 || c >= config.cols || this.board[r][c] !== player) continue;
-                count++;
-                cells.push([r, c]);
-                if (count === 4) {
-                    this.winningCells = cells;
-                    return true;
+                if (this.isValidCell(r, c) && this.board[r][c] === player) {
+                    count++;
+                    cells.push([r, c]);
+                } else {
+                    break;
                 }
+            }
+    
+            for (let i = 1; i <= 3; i++) {
+                const r = row - i * dx, c = col - i * dy;
+                if (this.isValidCell(r, c) && this.board[r][c] === player) {
+                    count++;
+                    if (cells.length < 4) {
+                        cells.push([r, c]);
+                    }
+                } else {
+                    break;
+                }
+            }
+    
+            if (count >= 4) {
+                this.winningCells = cells;
+                return true;
             }
         }
         return false;
+    },
+    
+    isValidCell(row, col) {
+        return row >= 0 && row < config.rows && col >= 0 && col < config.cols;
     },
 
     getWinningCells() {
