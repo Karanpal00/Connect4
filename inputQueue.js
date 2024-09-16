@@ -33,7 +33,11 @@ export const inputQueue = {
             case 'click':
                 if (!renderer.isAnimating && !gameLogic.isPaused && !gameLogic.isProcessingMove) {
                     const col = renderer.getColumnFromX(input.clientX);
-                    await gameLogic.makeMove(col);
+                    
+                    if (col >= 0 && col < 7) {
+                        await gameLogic.makeMove(col);
+                    }
+                        
                 }
                 break;
             case 'reset':

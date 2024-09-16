@@ -12,9 +12,9 @@ export default class Piece {
         if (df && renderer.cellSize >= 70) {
             this.x0 = -1;
             this.y0 = 4;
-        } else if (df && renderer.cellSize >= 60) {
-            this.y0 = 3;
-        } 
+        } else if (df && renderer.cellSize >= 50) {
+            this.y0 = 2.5;
+        }
         
         
         this.gradient = ctx.createRadialGradient(this.x0, this.y0, this.cellSize*constant, this.x1, this.y1, this.cellSize);
