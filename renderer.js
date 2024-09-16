@@ -74,6 +74,7 @@ export const renderer = {
 
         this.gameCtx.clearRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
         const winningCells = gameLogic.getWinningCells();
+
         for (let row = 1; row < config.rows; row++) {
             for (let col = 0; col < config.cols; col++) {
                 const x = col * this.cellSize + this.cellSize / 2;
@@ -92,6 +93,7 @@ export const renderer = {
                 }
             }
         }
+
         if (!this.isAnimating && !this.gameOver) {
             const x = 3*this.cellSize+this.cellSize/2;
 
@@ -100,7 +102,7 @@ export const renderer = {
                     : this.player2Mid.render(x, this.cellSize/2);
         }
         
-        if (this.hoverColumn !== -1 && !this.isAnimating && !this.gameOver) {
+        if ((this.hoverColumn >= 0 && this.hoverColumn < 7) && !this.isAnimating && !this.gameOver) {
             this.drawHoverEffect();
         }
     },
@@ -125,14 +127,10 @@ export const renderer = {
                 ? this.player1.render(x, this.cellSize) 
                 : this.player2.render(x, this.cellSize);
 
-
-
             gameLogic.currentPlayer === 1 
                 ? this.hoverPlayer1.render(x, y) 
                 : this.hoverPlayer2.render(x, y);
-            }
-
-            
+            }  
         }
     },
 

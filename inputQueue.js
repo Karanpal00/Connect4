@@ -19,7 +19,7 @@ export const inputQueue = {
 
         while (this.queue.length > 0) {
             const input = this.queue.shift();
-            await this.handleInput(input);
+            await this.handleInput(input);            
         }
 
         this.isProcessing = false;
@@ -33,7 +33,7 @@ export const inputQueue = {
             case 'click':
                 if (!renderer.isAnimating && !gameLogic.isPaused && !gameLogic.isProcessingMove) {
                     const col = renderer.getColumnFromX(input.clientX);
-                    
+                    renderer.hoverColumn = -1;
                     if (col >= 0 && col < 7) {
                         await gameLogic.makeMove(col);
                     }
