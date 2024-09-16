@@ -108,6 +108,7 @@ export const renderer = {
     },
 
     drawHoverEffect() {
+        
         if (this.hoverColumn !== -1) {
             const row = gameLogic.getDropLocation(this.hoverColumn);
             if (row !== -1) {

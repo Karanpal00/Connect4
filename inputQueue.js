@@ -19,7 +19,10 @@ export const inputQueue = {
 
         while (this.queue.length > 0) {
             const input = this.queue.shift();
-            await this.handleInput(input);            
+            await this.handleInput(input); 
+            if (input.type === 'click') {
+                break;
+            }           
         }
 
         this.isProcessing = false;

@@ -18,8 +18,10 @@ export const gameLogic = {
     },
 
     getDropLocation(col) {
-        for (let row = config.rows - 1; row > 0; row--) {
-            if (!this.board[row][col]) return row;
+        if (col < 7 && col >= 0) {
+            for (let row = config.rows - 1; row > 0; row--) {
+                if (!this.board[row][col]) return row;
+            }
         }
         return -1;
     },
@@ -49,7 +51,6 @@ export const gameLogic = {
                 renderer.drawBoardAndPieces();
             }
         }
-
         this.isProcessingMove = false;
     },
 
