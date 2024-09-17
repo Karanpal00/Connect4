@@ -42,7 +42,7 @@ export const gameLogic = {
                 confettistart.startConfetti();
                 this.showPlayButton();
                 this.isPaused = true;
-            } else if (this.board.flat().every(cell => cell !== null)) {
+            } else if (checkDraw()) {
                 renderer.displayDraw();
                 this.showPlayButton();
                 this.isPaused = true;
@@ -63,7 +63,16 @@ export const gameLogic = {
         const button = document.getElementById("playButton");
         button.style.display = 'none';
     },
+    
+    checkDraw() {
+        for (let i = config.rows-1; i > 0;--i) {
+for (let j = config.columns-1; j >= 0; --j) {
+if (this.board[i][j] === null) { 
+  return false;}
 
+}
+return true;
+}
     
 
     checkWin(row, col, player) {
