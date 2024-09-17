@@ -235,8 +235,9 @@ export const renderer = {
             { opacity: 1, scale: 1, rotation: 0, duration: 1.5, ease: "elastic.out(1, 0.5)" }
         );
 
+        this.gameOver = true;
+
         if (winningPlayer !== null) {
-            this.gameOver = true;
             this.drawBoardAndPieces();
         }
     },
