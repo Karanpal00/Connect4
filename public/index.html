@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect 4</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.0/gsap.min.js"></script>
+    <!-- Socket.io CDN -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+    <button id="createRoomButton">Create Room</button>
+    <button id="joinRoomButton">Join Room</button>
+
+    <script type="module">
+        import { inputQueue } from './inputQueue.js';
+        import { initializeGame } from './main.js';
+        
+        const socket = io('http://localhost:3000');  // Connect to the local server
+
+        let roomId;
+
+        // Create a room (for the first player)
+        function createRoom() {
+            socket.emit('createRoom');
+        }
+
+        // Join a room (for the second player)
+        function joinRoom() {
+            roomId = prompt("Enter the Room ID to join:");
+            socket.emit('joinRoom', roomId);
+        }
+
+        // Listen for room creation confirmation
+        socket.on('roomCreated', (id) => {
+            roomId = id;
+            console.log("Room created with ID:", roomId);
+            alert(`Room created! Share this ID with your opponent: ${roomId}`);
+        });
+
+        // Listen for successful room joining
+        socket.on('roomJoined', (roomId) => {
+            console.log(`Joined room: ${roomId}`);
+        });
+
+        // Start the game when both players are in the room
+        socket.on('startGame', () => {
+            console.log("Both players are in the room. Game starts now!");
+            initializeGame();  // Start your game logic
+        });
+
+        // Send move to the server
+        function sendMove(move) {
+            socket.emit('move', { ...move, room: roomId });
+        }
+
+        // Listen for moves from the opponent
+        socket.on('move', (data) => {
+            console.log("Move received on client: ", data);
+            inputQueue.enqueue(data); // Add to the input queue
+        });
+
+        // Process move queue
+        function processQueue() {
+            while (inputQueue.clientQueue.length > 0) {
+                const input = inputQueue.clientQueue.shift();
+                console.log(input.type);
+                if (input.type === 'click') {
+                    console.log('Emitting move:', input); 
+                    sendMove(input);
+                }
+            }
+        }
+
+        setInterval(processQueue, 100);  // Continuously process the queue
+
+        // Bind buttons to functions (for demonstration)
+        document.querySelector('#createRoomButton').addEventListener('click', createRoom);
+        document.querySelector('#joinRoomButton').addEventListener('click', joinRoom);
+    </script>
+</body>
+</html>
