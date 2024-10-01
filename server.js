@@ -11,7 +11,6 @@ const io = new Server(server, {
   }
 });
 
-// Listen for client connections
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
@@ -23,7 +22,6 @@ io.on('connection', (socket) => {
     console.log(`${socket.id} created and joined room ${roomId}`);
   });
 
-  // Join an existing room
   socket.on('joinRoom', (roomId) => {
     const room = io.sockets.adapter.rooms.get(roomId);
     if (room && room.size === 1) {
@@ -36,16 +34,15 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Relay moves between players
-  // On receiving a move from a player
+
 socket.on('move', (data) => {
-    console.log("Move received on server:", data); // Log the move to check if it's received
+    console.log("Move received on server:", data); 
     
-    // Check if the player is in the room before broadcasting
-    const room = io.sockets.adapter.rooms.get(data.room); // Get the room
+    
+    const room = io.sockets.adapter.rooms.get(data.room); 
     if (room) {
-        console.log(`Players in room ${data.room}:`, room.size); // Log how many players are in the room
-        socket.to(data.room).emit('move', data); // Broadcast the move to the other player
+        console.log(`Players in room ${data.room}:`, room.size);
+        socket.to(data.room).emit('move', data); 
     } else {
         console.log(`Room ${data.room} does not exist or is empty.`);
     }
