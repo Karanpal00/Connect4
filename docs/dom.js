@@ -62,7 +62,19 @@ export const dom = {
                 z-index: 1000;
                 display: none;
             }
-            #player1, #player2 {
+            #player1 {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 10px;
+                font-weight: bold;
+                color: white;
+                background-color: #333;
+                border-radius: 15px;
+                margin: 5px 0;
+            }
+            #player2 {
                 width: 100%;
                 display: flex;
                 justify-content: center;

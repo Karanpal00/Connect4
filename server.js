@@ -4,59 +4,87 @@ import { Server } from 'socket.io';
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: '*', 
-    methods: ['GET', 'POST']
-  }
-});
+const io = new Server(server);
+
+app.use(express.static('docs'));
+const rooms = new Map();
 
 io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id);
+  console.log('New client connected:', socket.id);
 
-  // Create or join a room
   socket.on('createRoom', () => {
-    const roomId = Math.random().toString(36).substring(2, 9);
+    const roomId = Math.random().toString(36);
+    rooms.set(roomId, { players: [socket.id], moves: [] });
     socket.join(roomId);
-    socket.emit('roomCreated', roomId);
-    console.log(`${socket.id} created and joined room ${roomId}`);
+    console.log(`Room created: ${roomId} by player: ${socket.id}`);
+    socket.emit('roomCreated', { roomId: roomId, playerId: socket.id });
   });
 
   socket.on('joinRoom', (roomId) => {
-    const room = io.sockets.adapter.rooms.get(roomId);
-    if (room && room.size === 1) {
-      socket.join(roomId);
-      socket.emit('roomJoined', roomId);
-      io.to(roomId).emit('startGame');
-      console.log(`${socket.id} joined room ${roomId}`);
+    if (rooms.has(roomId)) {
+      const room = rooms.get(roomId);
+      if (room.players.length < 2) {
+        room.players.push(socket.id);
+        socket.join(roomId);
+        socket.emit('roomJoined', { roomId, playerId: socket.id });
+
+        if (room.players.length === 2) {
+          io.to(roomId).emit('startGame', { 
+            player1: room.players[0], 
+            player2: room.players[1] 
+          });
+        }
+      } else {
+        socket.emit('roomFull');
+      }
     } else {
-      socket.emit('error', 'Room does not exist or is full.');
+      socket.emit('roomNotFound');
     }
   });
 
-
-socket.on('move', (data) => {
-    console.log("Move received on server:", data); 
-    
-    
-    const room = io.sockets.adapter.rooms.get(data.room); 
-    if (room) {
-        console.log(`Players in room ${data.room}:`, room.size);
-        socket.to(data.room).emit('move', data); 
+  socket.on('startAgain', (data) => {
+    console.log('Received startAgain event with data:', data);
+    if (rooms.has(data)) {
+      const room = rooms.get(data);
+      io.to(data).emit('startGame', {
+        player1: room.players[0],
+        player2: room.players[1]
+      })
     } else {
-        console.log(`Room ${data.room} does not exist or is empty.`);
+      console.log("Not Found");
     }
-});
+  });
 
+  socket.on('playerDeclined', (data)=> {
+    rooms.delete(roomId);
+    io.to(data.roomId).emit('declineMessage', data.player);
+  })
+
+
+  socket.on('move', (data) => {
+    if (rooms.has(data.room)) {
+      const room = rooms.get(data.room);
+      room.moves.push(data);
+      io.to(data.room).emit('move', data);
+    }
+  });
 
   socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
+    console.log('Client disconnected');
+    rooms.forEach((room, roomId) => {
+      const index = room.players.indexOf(socket.id);
+      if (index !== -1) {
+        room.players.splice(index, 1);
+        if (room.players.length === 0) {
+          rooms.delete(roomId);
+        } else {
+          io.to(roomId).emit('playerDisconnected', socket.id);
+        }
+      }
+    });
   });
 });
 
-// Start the server on localhost:3000
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+server.listen(5500, () => {
+    console.log('Server running at http://localhost:5500');
 });
-

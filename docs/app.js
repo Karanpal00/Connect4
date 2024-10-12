@@ -1,70 +1,179 @@
 import {inputQueue} from './inputQueue.js';
-import { initializeGame } from './main.js';
-import { io } from './socket.io';
+import playAgain from './playAgainModal.js';
 
-    const socket = io();  // Replace with your actual Ngrok URL
+const socket = io();
 
-        let roomId;
+let roomId = null;
+let playerId = null;
+let playerRole = null;
+let lastMove = null;
+let flag = false;
 
-        // Create a room (for the first player)
-        function createRoom() {
-            socket.emit('createRoom');
+function createRoom() {
+    if (roomId === null) {
+        socket.emit('createRoom');
+        console.log('Requesting to create a room...');
+    } else {
+        console.log("Already in a room");
+    }
+    
+}
+
+function joinRoom() {
+    if (!roomId) {
+        const roomIdToJoin = prompt("Enter the Room ID to join:");
+        if (roomIdToJoin) {
+            console.log(`Requesting to join room: ${roomIdToJoin}`);
+            socket.emit('joinRoom', roomIdToJoin);
         }
+    } else {
+        console.log("Already in a room");
+    }   
+}
 
-        // Join a room (for the second player)
-        function joinRoom() {
-            roomId = prompt("Enter the Room ID to join:");
-            socket.emit('joinRoom', roomId);
+function sendMove(move) {
+    if (roomId && playerId) {
+        socket.emit('move', { ...move, room: roomId, player: playerId });
+    } else {
+        console.error('Cannot send move: Room or Player ID is missing');
+    }
+}
+function reset() {
+    roomId = null;
+    playerId = null;
+    playerRole = null;
+    lastMove = null;
+    flag = false;
+    inputQueue.handleInput({type:'reset'});
+}
+
+socket.on('connect', () => {
+    console.log('Connected to server with socket ID:', socket.id);
+});
+
+socket.on('roomCreated', (data) => {
+    console.log('Received roomCreated event:', data);
+    if (data && data.roomId && data.playerId) {
+        roomId = data.roomId;
+        playerId = data.playerId;
+        playerRole = 'player1';
+        console.log(`Room created with ID: ${roomId}`);
+        console.log(`You are Player 1 with ID: ${playerId}`);
+        alert(`Room created! Share this ID with your opponent: ${roomId}`);
+    } else {
+        console.error('Invalid data received for roomCreated event:', data);
+    }
+});
+
+socket.on('roomJoined', (data) => {
+    roomId = data.roomId;
+    playerId = data.playerId;
+    playerRole = 'player2';
+    console.log(`Joined room: ${roomId}`);
+    console.log(`You are Player 2 with ID: ${playerId}`);
+});
+
+socket.on('startGame', (data) => {
+    console.log('Received startGame data:', data);
+    if (data && data.player1 && data.player2) {
+        flag = false;
+        inputQueue.handleInput({type: 'reset', clientX : null});
+        const player1 = document.getElementById('player1');
+        player1.style.backgroundColor = 'green';
+        console.log(`Game started. Player 1: ${data.player1}, Player 2: ${data.player2}`);
+        if (playerId === data.player1) {
+            console.log('You are Player 1');
+        } else if (playerId === data.player2) {
+            console.log('You are Player 2');
         }
+        lastMove = data.player2;
+    } else {
+        console.error('Error: Invalid data received from startGame event.');
+    }
+});
 
-        // Listen for room creation confirmation
-        socket.on('roomCreated', (id) => {
-            roomId = id;
-            console.log("Room created with ID:", roomId);
-            alert(`Room created! Share this ID with your opponent: ${roomId}`);
-        });
+async function askToPlay (playAgainObj) {
+    const again = await playAgainObj.show();
+    if (again) {
+        if (roomId) {
+            console.log('Emitting startAgain with roomId:', roomId);
+            socket.emit('startAgain', roomId);
 
-        // Listen for successful room joining
-        socket.on('roomJoined', (roomId) => {
-            console.log(`Joined room: ${roomId}`);
-        });
-
-        // Start the game when both players are in the room
-        socket.on('startGame', () => {
-            console.log("Both players are in the room. Game starts now!");
-            
-            initializeGame();
-            // Start the game logic here
-        });
-
-        // Send move to the server
-        function sendMove(move) {
-            socket.emit('move', { ...move, room: roomId });
+        } else {
+            console.log('KNUL');
         }
-
-        // Listen for moves from the opponent
-        socket.on('move', (data)=> {
-            console.log("move received on app: ", data);
-            inputQueue.enqueue(data);
-        });
         
-        function processQueue() {
-            while (inputQueue.clientQueue.length > 0) {
-                const input = inputQueue.clientQueue.shift();
-                console.log(input.type);
-                if (input.type === 'click') {
-                    console.log('Emitting move:', input); 
-                    socket.emit('move', input);
-                }
-            }
+    } else {
+        socket.emit('playerDeclined', {roomId: roomId, player : playerId});
+        reset();
+    }
+}
+
+socket.on('declineMessage', (data)=> {
+    if (playerId) {
+        alert('Player Declined exiting....');
+        reset();
+    }
+});
+socket.on('move', (data) => {
+    console.log('Move received:', data);
+    if (data.type === 'playAgain' && !flag) {
+        const playAgainObj = new playAgain();
+        askToPlay(playAgainObj);
+    }
+    if (lastMove !== data.player) {
+        inputQueue.handleInput(data);
+        lastMove = data.player;
+    } else {
+        console.log('Ignoring move: Not this player\'s turn');
+    }
+});
+
+socket.on('playerDisconnected', (disconnectedPlayerId) => {
+    console.log(`Player ${disconnectedPlayerId} has disconnected`);
+});
+
+socket.on('roomFull', () => {
+    console.log('The room is full. Cannot join.');
+    alert('The room is full. Please try another room or create a new one.');
+});
+
+socket.on('roomNotFound', () => {
+    console.log('Room not found. Please check the room ID.');
+    alert('Room not found. Please check the room ID and try again.');
+});
+
+function processQueue() {
+    while (inputQueue.clientQueue.length > 0) {
+        const input = inputQueue.clientQueue.shift();
+        if(input.type === 'hover' && lastMove !== playerId) {
+            inputQueue.handleInput(input);
+        } else if (input.type === 'click' && lastMove !== playerId) {
+            inputQueue.handleInput(input);
+            sendMove(input);
+            lastMove = playerId;
+        } else if (input.type === 'playAgain' && !flag) {
+            sendMove(input);
+            flag = true;
         }
-        
-        
-        setInterval(processQueue, 100);
-        // Bind buttons to functions (for demonstration)
-        document.querySelector('#createRoomButton').addEventListener('click', createRoom);
-        document.querySelector('#joinRoomButton').addEventListener('click', joinRoom);
+    }
+}
 
+setInterval(processQueue, 100);
 
+document.addEventListener('DOMContentLoaded', () => {
+    const createRoomButton = document.querySelector('#createRoomButton');
+    const joinRoomButton = document.querySelector('#joinRoomButton');
 
+    if (createRoomButton) {
+        createRoomButton.addEventListener('click', createRoom);
+    } else {
+        console.error('#createRoomButton not found in the document');
+    }
 
+    if (joinRoomButton) {
+        joinRoomButton.addEventListener('click', joinRoom);
+    } else {
+        console.error('#joinRoomButton not found in the document');
+    }
+});

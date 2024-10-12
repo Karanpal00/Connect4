@@ -40,6 +40,9 @@ export const gameLogic = {
             if (this.checkWin(row, col, player)) {
                 renderer.displayWin(player);
                 confettistart.startConfetti();
+                setTimeout(function() {
+                    confettistart.stopConfetti();
+                },7000);
                 this.showPlayButton();
                 this.isPaused = true;
             } else if (this.checkDraw()) {
@@ -123,10 +126,18 @@ export const gameLogic = {
     },
 
     switchPlayer() {
+        const player1 = document.getElementById('player1');
+        const player2 = document.getElementById('player2');
+        player1.style.backgroundColor = this.currentPlayer === 2 ?'green': '#333';
+        player2.style.backgroundColor = this.currentPlayer === 1 ?'green': '#333'; 
         this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
     },
 
     resetGame() {
+        const player1 = document.getElementById('player1');
+        const player2 = document.getElementById('player2');
+        player1.style.backgroundColor = '#333';
+        player2.style.backgroundColor = '#333';
         this.initializeBoard();
         renderer.resetDisplay();
         renderer.drawBoardAndPieces();

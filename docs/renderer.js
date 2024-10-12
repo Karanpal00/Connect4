@@ -111,7 +111,7 @@ export const renderer = {
         
         if (this.hoverColumn !== -1) {
             const row = gameLogic.getDropLocation(this.hoverColumn);
-            if (row !== -1) {
+           // if (row !== -1) {
                 this.gameCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
                 this.gameCtx.fillRect(
                     this.hoverColumn * this.cellSize,
@@ -120,19 +120,24 @@ export const renderer = {
                     this.boardCanvas.height - (this.cellSize*(6-row))
                 );
 
+            
             const x = this.hoverColumn * this.cellSize + this.cellSize / 2;
             const y = row* this.cellSize + this.cellSize / 2;
-            
+            let ProjY = this.cellSize;
+            if (row === -1) {
+                ProjY = this.cellSize/2;
+            } 
+
             this.gameCtx.clearRect(0, 0, this.gameCanvas.width, this.cellSize);
             gameLogic.currentPlayer === 1 
-                ? this.player1.render(x, this.cellSize) 
-                : this.player2.render(x, this.cellSize);
+                ? this.player1.render(x, ProjY) 
+                : this.player2.render(x, ProjY);
 
             gameLogic.currentPlayer === 1 
                 ? this.hoverPlayer1.render(x, y) 
                 : this.hoverPlayer2.render(x, y);
             }  
-        }
+        //}
     },
 
     updateHoverColumn(clientX) {
@@ -152,7 +157,7 @@ export const renderer = {
         const rect = this.boardCanvas.getBoundingClientRect();
         const x = clientX - rect.left;
         return Math.floor(x / this.cellSize);
-    },
+    },    
 
     animatePieceDrop(row, col, player) {
         return new Promise((resolve) => {

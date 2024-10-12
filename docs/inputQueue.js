@@ -5,14 +5,28 @@ export const inputQueue = {
     clientQueue:[],
     queue: [],
     isProcessing: false,
+    row : null,
 
     enqueue(input) {
         if (input.type === 'click' && (this.isProcessing || this.queue.some(item => item.type === 'click'))) {
             return;
         }
+        if (input.type === 'click') {
+            input.clientX = renderer.getColumnFromX(input.clientX);
+            this.row = gameLogic.getDropLocation(input.clientX);
+        }
+        if ((input.clientX < 0 || input.clientX >= 7 || this.row === -1) && input.type === 'click') {
+            return;
+        } 
         this.clientQueue.push(input);
-        this.queue.push(input);
-        this.processQueue();
+        
+        
+
+        //if (input.type === 'hover') {
+        //    this.queue.push(input);
+        //}
+        
+//        this.processQueue();
     },
 
     async processQueue() {
@@ -38,12 +52,8 @@ export const inputQueue = {
                 break;
             case 'click':
                 if (!renderer.isAnimating && !gameLogic.isPaused && !gameLogic.isProcessingMove) {
-                    const col = renderer.getColumnFromX(input.clientX);
                     renderer.hoverColumn = -1;
-                    if (col >= 0 && col < 7) {
-                        await gameLogic.makeMove(col);
-                    }
-                        
+                    await gameLogic.makeMove(input.clientX);
                 }
                 break;
             case 'reset':

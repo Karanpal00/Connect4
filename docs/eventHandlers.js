@@ -16,8 +16,8 @@ export const eventHandlers = {
         boardCanvas.addEventListener('touchstart', this.handleTouchStart.bind(this));
         boardCanvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
 
-        document.getElementById('playButton').addEventListener('click', this.handlePlayAgain.bind(this));
-        document.getElementById('resetButton').addEventListener('click', this.handlePlayAgain.bind(this));
+        document.getElementById('playButton').addEventListener('click', this.handleResetButton.bind(this));
+        document.getElementById('resetButton').addEventListener('click', this.handleResetButton.bind(this));
     },
 
     handleMouseMove(e) {
@@ -47,8 +47,8 @@ export const eventHandlers = {
     handleClick(e) {
         inputQueue.enqueue({ type: 'click', clientX: e.clientX });
     },
+    handleResetButton() {
+        inputQueue.enqueue({ type: 'playAgain', clientX: null });
+    },
 
-    handlePlayAgain() {
-        gameLogic.resetGame();
-    }
 };

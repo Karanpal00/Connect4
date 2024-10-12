@@ -5,69 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connect 4</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.0/gsap.min.js"></script>
-    <!-- Socket.io CDN -->
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 </head>
 <body>
-    <button id="createRoomButton">Create Room</button>
-    <button id="joinRoomButton">Join Room</button>
-
+    <button id = "createRoomButton">Create room</button>
+    <button id = "joinRoomButton">Join room</button>
     <script type="module">
-        import { inputQueue } from './inputQueue.js';
-        import { initializeGame } from './main.js';
-        
-        const socket = io('https://connect4-smrh.onrender.com');  
-
-        let roomId;
-
-        function createRoom() {
-            socket.emit('createRoom');
-        }
-
-        function joinRoom() {
-            roomId = prompt("Enter the Room ID to join:");
-            socket.emit('joinRoom', roomId);
-        }
-
-        socket.on('roomCreated', (id) => {
-            roomId = id;
-            console.log("Room created with ID:", roomId);
-            alert(`Room created! Share this ID with your opponent: ${roomId}`);
-        });
-
-        socket.on('roomJoined', (roomId) => {
-            console.log(`Joined room: ${roomId}`);
-        });
-
-        socket.on('startGame', () => {
-            console.log("Both players are in the room. Game starts now!");
-            initializeGame();  
-        });
-
-        function sendMove(move) {
-            socket.emit('move', { ...move, room: roomId });
-        }
-
-        socket.on('move', (data) => {
-            console.log("Move received on client: ", data);
-            inputQueue.enqueue(data); 
-        });
-
-        function processQueue() {
-            while (inputQueue.clientQueue.length > 0) {
-                const input = inputQueue.clientQueue.shift();
-                console.log(input.type);
-                if (input.type === 'click') {
-                    console.log('Emitting move:', input); 
-                    sendMove(input);
-                }
-            }
-        }
-
-        setInterval(processQueue, 100);  
-
-        document.querySelector('#createRoomButton').addEventListener('click', createRoom);
-        document.querySelector('#joinRoomButton').addEventListener('click', joinRoom);
+        import {initializeGame} from './main.js';
+        import './app.js';
+        initializeGame(); 
     </script>
 </body>
 </html>
