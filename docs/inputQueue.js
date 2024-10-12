@@ -6,6 +6,7 @@ export const inputQueue = {
     queue: [],
     isProcessing: false,
     row : null,
+    modeFlag : true,
 
     enqueue(input) {
         if (input.type === 'click' && (this.isProcessing || this.queue.some(item => item.type === 'click'))) {
@@ -17,16 +18,15 @@ export const inputQueue = {
         }
         if ((input.clientX < 0 || input.clientX >= 7 || this.row === -1) && input.type === 'click') {
             return;
-        } 
-        this.clientQueue.push(input);
+        }        
+    
+        if (this.modeflag) {
+            this.queue.push(input);
+            this.processQueue();
+        } else {
+            this.clientQueue.push(input);
+        }
         
-        
-
-        //if (input.type === 'hover') {
-        //    this.queue.push(input);
-        //}
-        
-//        this.processQueue();
     },
 
     async processQueue() {
