@@ -27,7 +27,6 @@ function createRoom() {
 }
 
 function joinRoom() {
-    if (isOnlineMode && !isGameActive) {
         if (!roomId) {
             const roomIdToJoin = prompt("Enter the Room ID to join:");
             if (roomIdToJoin) {
@@ -37,63 +36,16 @@ function joinRoom() {
         } else {
             console.log("Already in a room");
         }
-    } else if (isGameActive) {
-        console.log("Cannot join room during an active game");
-    } else {
-        console.log("Cannot join room in offline mode");
-    }
 }
 
 function sendMove(move) {
-    if (isOnlineMode) {
         if (roomId && playerId) {
             socket.emit('move', { ...move, room: roomId, player: playerId });
         } else {
             console.error('Cannot send move: Room or Player ID is missing');
         }
-    } else {
-        handleOfflineMove(move);
-    }
-}
-
-function handleOfflineMove(move) {
-    inputQueue.handleInput(move);
-    lastMove = lastMove === 'player1' ? 'player2' : 'player1';
-}
-
-function handleModeChange() {
-    if (!isGameActive) {
-        isOnlineMode = !isOnlineMode;
-        const modeButton = document.querySelector('#modeButton');
-        if (isOnlineMode) {
-            modeButton.textContent = 'Switch to Offline Mode';
-            console.log("Switched to Online Mode");
-        } else {
-            modeButton.textContent = "Switch to Online Mode";
-            console.log("Switched to Offline Mode");
-            reset();
-        }
-        updateUIForMode();
-    } else {
-        alert("Cannot change game mode during an active game");
-    }
-}
-
-function updateUIForMode() {
-    const createRoomButton = document.querySelector('#createRoomButton');
-    const joinRoomButton = document.querySelector('#joinRoomButton');
-    const modeButton = document.querySelector('#modeButton');
-    
-    if (isOnlineMode) {
-        createRoomButton.style.display = 'inline-block';
-        joinRoomButton.style.display = 'inline-block';
-    } else {
-        createRoomButton.style.display = 'none';
-        joinRoomButton.style.display = 'none';
     }
 
-    modeButton.disabled = isGameActive;
-}
 
 function reset() {
     roomId = null;
@@ -101,19 +53,7 @@ function reset() {
     playerRole = null;
     lastMove = null;
     flag = false;
-    isGameActive = false;
     inputQueue.handleInput({type:'reset'});
-    updateUIForMode();
-}
-
-function startOfflineGame() {
-    if (!isOnlineMode) {
-        reset();
-        lastMove = 'player2'; // Start with player1's turn
-        isGameActive = true;
-        console.log("Starting offline 2-player game");
-        updateUIForMode();
-    }
 }
 
 socket.on('connect', () => {
@@ -157,7 +97,6 @@ socket.on('startGame', (data) => {
             console.log('You are Player 2');
         }
         lastMove = data.player2;
-        updateUIForMode();
     } else {
         console.error('Error: Invalid data received from startGame event.');
     }
@@ -169,13 +108,9 @@ async function askToPlay(playAgainObj) {
         if (roomId) {
             console.log('Emitting startAgain with roomId:', roomId);
             socket.emit('startAgain', roomId);
-        } else {
-            startOfflineGame();
         }
     } else {
-        if (isOnlineMode) {
-            socket.emit('playerDeclined', {roomId: roomId, player : playerId});
-        }
+        socket.emit('playerDeclined', {roomId: roomId, player : playerId});
         reset();
     }
 }
@@ -222,7 +157,6 @@ socket.on('roomNotFound', () => {
 function processQueue() {
     while (inputQueue.clientQueue.length > 0) {
         const input = inputQueue.clientQueue.shift();
-        if (isOnlineMode) {
             if(input.type === 'hover' && lastMove !== playerId) {
                 inputQueue.handleInput(input);
             } else if (input.type === 'click' && lastMove !== playerId) {
@@ -233,14 +167,6 @@ function processQueue() {
                 sendMove(input);
                 flag = true;
             }
-        } else {
-            // Offline mode logic
-            if (input.type === 'click') {
-                handleOfflineMove(input);
-            } else if (input.type === 'playAgain') {
-                startOfflineGame();
-            }
-        }
     }
 }
 
@@ -249,13 +175,6 @@ setInterval(processQueue, 100);
 document.addEventListener('DOMContentLoaded', () => {
     const createRoomButton = document.querySelector('#createRoomButton');
     const joinRoomButton = document.querySelector('#joinRoomButton');
-    const modeButton = document.querySelector('#modeButton');
-
-    if (modeButton) {
-        modeButton.addEventListener('click', handleModeChange);
-    } else {
-        console.error('#modeButton not found in the document');
-    }
 
     if (createRoomButton) {
         createRoomButton.addEventListener('click', createRoom);
@@ -268,6 +187,4 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('#joinRoomButton not found in the document');
     }
-
-    updateUIForMode();
 });

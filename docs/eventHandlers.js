@@ -16,7 +16,7 @@ export const eventHandlers = {
         boardCanvas.addEventListener('touchstart', this.handleTouchStart.bind(this));
         boardCanvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
 
-        document.getElementById('playButton').addEventListener('click', this.handleResetButton.bind(this));
+        document.getElementById('playButton').addEventListener('click', this.handlePlayButton.bind(this));
         document.getElementById('resetButton').addEventListener('click', this.handleResetButton.bind(this));
     },
 
@@ -47,7 +47,12 @@ export const eventHandlers = {
     handleClick(e) {
         inputQueue.enqueue({ type: 'click', clientX: e.clientX });
     },
+
     handleResetButton() {
+        inputQueue.enqueue({ type: 'reset', clientX: null });
+    },
+    
+    handlePlayButton() {
         inputQueue.enqueue({ type: 'playAgain', clientX: null });
     },
 
